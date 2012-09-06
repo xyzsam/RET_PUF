@@ -1,0 +1,19 @@
+<settings>
+	dyelibrary		= "$install\DB\Dyes\"
+	dyelist			= "list of dyes.txt"
+	simlength		= 10000000000
+	timeunit		= "ps"
+	max_iterations_per_step = 1000
+	avoid_zero_latency	= true
+</settings>
+<photons default_timeunit="ps">
+</photons>
+<outputs excitation_log="D:\Documents\My Dropbox\Dwyer\Experiments\trace logs\">	
+	<file name = "D:\Documents\My Dropbox\Dwyer\Experiments\trace logs\" data = "d e f x l"/>
+</outputs>
+<Chromophores>
+	<cp dye = "Cy3" y=40  x=0   z=0 name="Cy1" />  	
+	<cp dye = "FL" y=-40 x=0   z=0 name="Fl1" />  
+	<cp dye = "Cy3" y=0   x=-40 z=0 name="Cy2" />  
+	<cp dye = "FL" y=0   x=40  z=0 name="Fl2" />  
+</Chromophores>

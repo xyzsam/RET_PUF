@@ -25,9 +25,9 @@
 %       The fourth element is the total count percentage difference with respect
 %         to the first histogram.
 %       The fifth element is the maximum difference between the two histograms
-%         at any one given time.
+%         at any one given time with respect to the first.
 %       The sixth element is the maximum percent difference between the two
-%         histograms at any one given time.
+%         histograms at any one given time with respect to the first.
 %     To prevent strange data collection errors from intefering with
 %     this metric, all leading and trailing zeros have been stripped from the
 %     histograms.
@@ -47,6 +47,7 @@ function result = twohistanalyze(encrypt_struct, decrypt_struct, mode)
     max_diff = max(abs(graph_1 - graph_2));
     total_count_diff = abs(encrypt_total_counts - decrypt_total_counts);
     result = [encrypt_total_counts decrypt_total_counts ...
-              total_count_diff max_diff];
+              total_count_diff total_count_diff/encrypt_total_counts*100 ...
+              max_diff max_diff/encrypt_total_counts*100];
   end
 end

@@ -45,7 +45,7 @@ function result = twohistanalyze(encrypt_struct, decrypt_struct, mode)
     encrypt_total_counts = sum(graph_1);
     decrypt_total_counts = sum(graph_2);
     max_diff = max(abs(graph_1 - graph_2));
-    total_count_diff = abs(encrypt_total_counts - decrypt_total_counts);
+    total_count_diff = encrypt_total_counts - decrypt_total_counts;
     result = [encrypt_total_counts decrypt_total_counts ...
               total_count_diff total_count_diff/encrypt_total_counts*100 ...
               max_diff max_diff/encrypt_total_counts*100];

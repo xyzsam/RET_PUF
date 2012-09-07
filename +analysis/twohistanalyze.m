@@ -6,7 +6,7 @@
 % same PUF is used, for example.
 %
 % SYNTAX:
-%   function stats = edanalyze(encrypt_struct, decrypt_struct, mode)
+%   function stats = twohistanalyze(encrypt_struct, decrypt_struct, mode)
 %     encrypt_struct: structure containing encryption data
 %     decrypt_struct: structure containing decryption data
 %     mode: A string indicating which statistics and metrics to compute.

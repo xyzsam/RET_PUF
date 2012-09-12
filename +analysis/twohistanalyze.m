@@ -32,11 +32,20 @@
 %     To prevent strange data collection errors from intefering with
 %     this metric, all leading and trailing zeros have been stripped from the
 %     histograms.
+%   if mode: 'xcorr_hist', stats is a 1x3 matrix.
+%     The first element is the integral of the correlation between the two data
+%       sets.
+%     The second element is the maximum of the cross correlation.
+%     The third element is the ratio of cross correlation's maximum and the
+%       maximum of the first data set's autocorrelation, to provide insight on
+%       how similar the two datasets are. The closer to 1 this value is, the
+%       more similar they are.
 %
 % Author: Sam Xi
+
 function stats = twohistanalyze(data_1, data_2, mode)
   if (strcmp(mode, 'counts_diff'))
-    end_index = @getShorterLength(data_1.graph, data_2.graph);
+    end_index = getShorterLength(data_1.graph, data_2.graph);
     graph_1 = data_1.graph(1:end_index);
     graph_2 = data_2.graph(1:end_index);
     d1_total_counts = sum(graph_1);
@@ -47,20 +56,22 @@ function stats = twohistanalyze(data_1, data_2, mode)
     stats = [d1_total_counts d2_total_counts ...
               total_count_diff total_count_diff/d1_total_counts*100 ...
               max_diff max_diff/max_graph_1*100];
+
   elseif (strcmp(mode, 'xcorr_hist'))
     cross_corr = xcorr(data_1.graph, data_2.graph);
     auto_corr = xcorr(data_1.graph, data_1.graph);
-    corr_integral = trapz(corr);
-    corr_max = max(corr);
+    corr_integral = trapz(cross_corr);
+    corr_max = max(cross_corr);
     corr_ratio = corr_max/max(auto_corr);
     stats = [corr_integral corr_max corr_ratio];
+
   end
 end
 
 function short_length = getShorterLength(hist1, hist2)
   if (length(hist1) > length(hist2))
-    short_length = length(hist2)
+    short_length = length(hist2);
   else
-    short_length = length(hist1)
+    short_length = length(hist1);
   end
 end

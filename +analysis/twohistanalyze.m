@@ -56,15 +56,12 @@ function stats = twohistanalyze(data_1, data_2, mode)
     stats = [d1_total_counts d2_total_counts ...
               total_count_diff total_count_diff/d1_total_counts*100 ...
               max_diff max_diff/max_graph_1*100];
-
   elseif (strcmp(mode, 'xcorr_hist'))
-    cross_corr = xcorr(data_1.graph, data_2.graph);
-    auto_corr = xcorr(data_1.graph, data_1.graph);
-    corr_integral = trapz(cross_corr);
-    corr_max = max(cross_corr);
-    corr_ratio = corr_max/max(auto_corr);
-    stats = [corr_integral corr_max corr_ratio];
-
+    stats = corr_stats(data_1.graph, data_2.graph);
+  elseif (strcmp(mode, 'hough_corr'))
+    stats = corr_stats(data_1.hough_sig, data_2.hough_sig);
+  elseif (strcmp(mode, 'cumhough_corr'))
+    stats = corr_stats(cumsum(data_1.hough_sig), cumsum(data_2.hough_sig));
   end
 end
 
@@ -74,4 +71,13 @@ function short_length = getShorterLength(hist1, hist2)
   else
     short_length = length(hist1);
   end
+end
+
+function stats = corr_stats(hist1, hist2)
+  cross_corr = xcorr(hist1, hist2);
+  auto_corr = xcorr(hist1, hist1);
+  corr_integral = trapz(cross_corr);
+  corr_max = max(cross_corr);
+  corr_ratio = corr_max/max(auto_corr);
+  stats = [corr_integral corr_max corr_ratio];
 end

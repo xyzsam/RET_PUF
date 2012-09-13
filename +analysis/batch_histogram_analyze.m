@@ -14,7 +14,7 @@
 % For easier use, the results are also formatted and printed to the console.
 % Author: Sam Xi
 
-function result = batch_histogram_analyze(dir, mode)
+function varargout = batch_histogram_analyze(dir, mode)
   % Load all the histogram data. data_array is a 1xn structure array, where n is
   % the number of data files per directory. total_array is a 1xm cell array,
   % where m is the number of directories. m is usually 2 - twohistanalyze only
@@ -52,12 +52,37 @@ function result = batch_histogram_analyze(dir, mode)
               '\n'];
     result_format = '%13.5g%13.5g%13.5f\n';
   end
-  fprintf(header);
-  for i=1:num_files
-    encrypt_struct = total_array{1}(i);
-    decrypt_struct = total_array{2}(i);
-    result(i, :) = analysis.twohistanalyze(encrypt_struct, decrypt_struct, mode);
-    % Print the results.
-    fprintf(result_format, result(i, :));
+  % Doing a sweeping comparison of all ix pairs requires a different looping
+  % structure and a different set of data structures than just doing
+  % corresponding ix pairs. Don't print anything because there is too much data
+  % to fit on the console.
+  if (strcmp(mode, 'intrapuf_hough_corr'))
+    corr_integral_result = zeros(num_files, num_files);
+    corr_max_result = zeros(num_files, num_files);
+    corr_ratio_result = zeros(num_files, num_files);
+    for i=1:num_files
+      for j=1:num_files
+        encrypt_struct = total_array{1}(i);
+        decrypt_struct = total_array{2}(j);
+        stats = analysis.twohistanalyze(encrypt_struct, decrypt_struct,  ...
+                                        'hough_corr');
+        corr_integral_result(i, j) = stats(1);
+        corr_max_result(i, j) = stats(2);
+        corr_ratio_result(i, j) = stats(3);
+      end
+    end
+    varargout{1} = corr_integral_result;
+    varargout{2} = corr_max_result;
+    varargout{3} = corr_ratio_result;
+  else
+    fprintf(header);
+    for i=1:num_files
+      encrypt_struct = total_array{1}(i);
+      decrypt_struct = total_array{2}(i);
+      result(i, :) = analysis.twohistanalyze(encrypt_struct, decrypt_struct, ...
+                                             mode);
+      fprintf(result_format, result(i, :));
+    end
+    varargout{1} = result;
   end
 end

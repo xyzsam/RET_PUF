@@ -1,4 +1,4 @@
-% BATCH_HISTOGRAM_ANALYZE
+% BATCH_TWOHIST_ANALYZE
 % Runs analysis between two sets of histograms, as specified by the mode.
 %
 % SYNTAX:

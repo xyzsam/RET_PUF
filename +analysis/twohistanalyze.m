@@ -40,6 +40,16 @@
 %       maximum of the first data set's autocorrelation, to provide insight on
 %       how similar the two datasets are. The closer to 1 this value is, the
 %       more similar they are.
+%   if mode: 'hough_corr', stats is a 1x3 matrix. It performs the equivalent
+%     function as 'xcorr_hist' except that the data operated on is the Hough
+%     signature of the amplitude histogram.
+%   if mode: 'cumhough_corr', stats is a 1x3 matrix. It performs the equivalent
+%     function as 'xcorr_hist' except that the data operated on is the
+%     cumulative sum of the Hough signature of the amplitude histogram.
+%   if mode: 'l2norm_hist', stats is a number representing the L2 norm of the
+%     two amplitude histograms.
+%   if mode: 'l2norm_hough', stats is a number representing the L2 norm of the
+%     two Hough signatures.
 %
 % Author: Sam Xi
 
@@ -57,11 +67,19 @@ function stats = twohistanalyze(data_1, data_2, mode)
               total_count_diff total_count_diff/d1_total_counts*100 ...
               max_diff max_diff/max_graph_1*100];
   elseif (strcmp(mode, 'xcorr_hist'))
-    stats = corr_stats(data_1.graph, data_2.graph);
+    ndata_1 = data_1.graph/max(data_1.graph);
+    ndata_2 = data_2.graph/max(data_2.graph);
+    stats = corr_stats(ndata_1, ndata_2);
   elseif (strcmp(mode, 'hough_corr'))
-    stats = corr_stats(data_1.hough_sig, data_2.hough_sig);
+    ndata_1 = data_1.hough_sig/max(data_1.hough_sig);
+    ndata_2 = data_2.hough_sig/max(data_2.hough_sig);
+    stats = corr_stats(ndata_1, ndata_2);
   elseif (strcmp(mode, 'cumhough_corr'))
-    stats = corr_stats(cumsum(data_1.hough_sig), cumsum(data_2.hough_sig));
+    ndata_1 = data_1.hough_sig/max(data_1.hough_sig);
+    ndata_2 = data_2.hough_sig/max(data_2.hough_sig);
+    stats = corr_stats(cumsum(ndata_1), cumsum(ndata_2));
+  elseif (strcmp(mode, 'l2norm'))
+    stats = l2norm(data_1.hough_sig, data_2.hough_sig);
   end
 end
 
@@ -80,4 +98,11 @@ function stats = corr_stats(hist1, hist2)
   corr_max = max(cross_corr);
   corr_ratio = corr_max/max(auto_corr);
   stats = [corr_integral corr_max corr_ratio];
+end
+
+function stats = l2norm(hist1, hist2)
+  hist1 = hist1/max(hist1);
+  hist2 = hist2/max(hist2);
+  l2 = sqrt(sum((hist1-hist2).^2));
+  stats = l2;
 end

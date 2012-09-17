@@ -2,7 +2,7 @@
 % Runs analysis between two sets of histograms, as specified by the mode.
 %
 % SYNTAX:
-%   result = batch_histogram_analyze(dir, mode)
+%   result = batch_twohist_analyze(dir, mode)
 %     dir: A directory containing two subdirectories which contain MATLAB data
 %       files to be analyzed. The data files are produced by asc2mat.
 %     mode: A string indicating the type of analysis to run. Valid options are:

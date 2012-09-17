@@ -34,7 +34,7 @@
 % For easier use, the results are also formatted and printed to the console.
 % Author: Sam Xi
 
-function varargout = batch_twohist_analyze(dir, mode)
+function result = batch_twohist_analyze(dir, mode)
   total_array = analysis.load_structs(dir);
   num_files = length(total_array{1});
   if (strcmp(mode, 'countsdiff'))
@@ -85,5 +85,4 @@ function varargout = batch_twohist_analyze(dir, mode)
     result(i, :) = analysis.twohistanalyze(data_1, data_2, analysis_type);
     fprintf(result_format, result(i, :));
   end
-  varargout{1} = result;
 end

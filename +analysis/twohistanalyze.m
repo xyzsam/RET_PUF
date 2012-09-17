@@ -10,14 +10,15 @@
 %     data_1: An array of data.
 %     data_2: An array of data.
 %     mode: A string indicating which statistics and metrics to compute.
+%     stats: The result of the analysis computations. See below.
 %
-%   if mode: 'countsdiff': result is an 1x6 matrix.
+%   if mode: 'countsdiff': stats is an 1x6 matrix.
 %     The two columns contain the total counts for the entire amplitude
 %       histograms.
 %     The third column is the difference in total counts.
 %     The fourth column is the percent difference in total counts.
 %     The fifth column
-%   if mode: 'xcorr', result is a 1x3 matrix.
+%   if mode: 'xcorr', stats is a 1x3 matrix.
 %     The first element is the integral of the correlation between the two data
 %       sets.
 %     The second element is the maximum of the cross correlation.
@@ -25,7 +26,7 @@
 %       maximum of the first data set's autocorrelation, to provide insight on
 %       how similar the two datasets are. The closer to 1 this value is, the
 %       more similar they are.
-%   if mode: 'l2norm', result is a number representing the L2 norm of the
+%   if mode: 'l2norm', stats is a number representing the L2 norm of the
 %     two datasets.
 %
 % Author: Sam Xi

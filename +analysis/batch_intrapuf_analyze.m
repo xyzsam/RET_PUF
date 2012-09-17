@@ -13,6 +13,7 @@
 %     'xcorr_hist' operates on the raw amplitude histograms.
 %     'xcorr_hough' operates on the Hough signatures.
 %     'xcorr_cumhough' operates on the cumulative Hough signature sums.
+%
 % l2norm = batch_intra_puf_analyze(dir, l2norm_mode) computes L2 norms on all
 % IX pairs. l2norm is an nxn matrix where n is the number of IX pairs. All data
 % sets are normalized to a maximum of 1 before any computation is performed.

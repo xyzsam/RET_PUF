@@ -23,4 +23,5 @@ function handle = bar3_color(data)
   caxis([barmin barmax]);
   colorbar;
   shading interp;
+  handle = bh;
 end

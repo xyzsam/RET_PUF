@@ -19,7 +19,8 @@ function handle = bar3_color(data)
     set(bh(i),'cdata',...
     get(bh(i),'zdata'));
   end
-  colormap(jet(barmax+1));
+  numcolors = 100;
+  colormap(jet(numcolors));
   caxis([barmin barmax]);
   colorbar;
   shading interp;

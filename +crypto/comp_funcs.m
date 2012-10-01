@@ -9,7 +9,7 @@
 % Syntax:
 %   func = comp_funcs(type)
 %   type: A string. Valid types are:
-%     'sumsquare': Sum of squares of differences.
+%     'l2norm': Sum of squares of differences.
 %     'conv_max': Maximum of the convolution.
 %     'conv_int': Integral of the convolution, with the trapezoidal approximation.
 %     'rel_conv_max': Compares the maximum of the convolution of the two data
@@ -21,7 +21,7 @@
 %     a similarity value. Syntax: val = func(data1, data2);
 
 function func = comp_funcs(type)
-  if (strcmp(type, 'sum_square'))
+  if (strcmp(type, 'l2norm'))
     func = @sum_square;
   elseif (strcmp(type, 'conv_max'))
     func = @conv_max;
@@ -39,7 +39,7 @@ function func = comp_funcs(type)
 end
 
   function val = sum_square(data1, data2)
-    val = sum((data1-data2).^2);
+    val = sqrt(sum((data1-data2).^2));
     val = 1/val;  % This makes larger values correspond to greater similarity.
   end
   

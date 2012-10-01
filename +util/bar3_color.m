@@ -1,7 +1,7 @@
 % BAR3_COLOR    Plots a 3D bar chart with an amplitude colormap.
 %
 % By default, bar3 colors the bar chart by column of data. This plots the bar
-% chart and shades it by comparative amplitude, so that trends are more easily
+% chart and shades it by amplitude, so that trends are more easily
 % seen. The colormap used is 'jet'.
 %
 % SYNTAX:

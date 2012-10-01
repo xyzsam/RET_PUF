@@ -34,7 +34,7 @@ grid_type = regexp(filename, '.*(?=_ic)', 'match');
 % underscores.
 ic = regexp(filename, '(?<=ic)([\d|,]*)', 'match');
 ex = regexp(filename, '(?<=i)([\d|,]*)', 'match');
-%em = 620;  % Temporary hard coding for filenames all missing emission info.
+%em = 670;  % Temporary hard coding for filenames all missing emission info.
 em = regexp(filename, '(?<=em)([\d|,]*)', 'match');
 keySet = linspace(0, period, length(array));
 % Take the log of the time domain response and remove zeros.

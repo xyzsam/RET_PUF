@@ -24,24 +24,26 @@ function out = quickrun(mode)
       cd('D:\Documents\My Dropbox\Dwyer\Experiments\');
       load mappingdb-ic0_20.mat
       cd('D:\Documents\My Dropbox\Dwyer\scripts\');
-      ciphertext = encrypt('ABCDEFGHI', mappingdb, 20000, [0 20], 526, ...
+      ciphertext = encrypt('ABCDE', mappingdb, 20000, [0 20], 526, ...
           'D:\Documents\My Dropbox\Dwyer\Experiments\pattern1_spectrum_encryption\');
       fprintf('Encryption complete.\n');
       plaintext = decrypt(ciphertext, mappingdb, 20000, [0 20], 526, ...
           'D:\Documents\My Dropbox\Dwyer\Experiments\pattern1_spectrum_decryption\');
       fprintf('Decrypted text: %s\n', plaintext);
   elseif (mode == 4) % trex measurements data
-      cd ('E:\Documents\Dropbox\Dwyer\Measurements\sam-114_1');
-      load('mappingdb.mat');
-      cd('E:\Documents\Dropbox\Dwyer\scripts\');
-      time_res = 50;
-      lifetime = 4.5;
-      orig_plaintext = 'ABCDEFGHIJKL';
-      ciphertext = encrypt(orig_plaintext, mappingdb, lifetime, [0], 620, ...
-          'E:\Documents\Dropbox\Dwyer\Measurements\sam-114_1\1\', 'sa114', time_res);
+      data_dir = 'E:\Documents\Dropbox\Dwyer\Measurements\sam-114_1\';
+      grid_type = 'sa114';
+      output_wavelength = 620; 
+      ic = [0];
+      time_res = 2e-9;
+      lifetime = 5e-9;
+      orig_plaintext = 'AABDCBDCEC';
+      load([data_dir 'mappingdb-test.mat']);      
+      ciphertext = encrypt(orig_plaintext, mappingdb, lifetime, ic, output_wavelength, ...
+          strcat(data_dir, '1', '\'), grid_type, time_res);
       fprintf('Encrypted text : %s\n', orig_plaintext);
-      plaintext = decrypt(ciphertext, mappingdb, lifetime, [0], 620, ...
-          'E:\Documents\Dropbox\Dwyer\Measurements\sam-114_1\2\', 'sa114', time_res);
+      plaintext = decrypt(ciphertext, mappingdb, lifetime, ic, output_wavelength, ...
+          strcat(data_dir, '2', '\'), grid_type, time_res);
       fprintf('Decrypted text : %s\n', plaintext);
       diff = sum(orig_plaintext == plaintext);
       fprintf('Decryption fidelity: %0.0f%%, %d out of %d chars.\n', ...

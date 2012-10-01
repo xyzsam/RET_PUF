@@ -3,7 +3,7 @@
 % the ciphertext, a mapping database, an initial condition, and a time delay as
 % the parameters and returns the decoded message as a String.
 %
-%   SYNTAX: plaintext = decrypt(ciphertext, mappingdb, t, ic, spec_dir)
+%   SYNTAX: plaintext = decrypt(ciphertext, mappingdb, observe_time, ic, spec_dir)
 %
 %     plaintext  = decoded message.
 %     ciphertext = encrypted message.
@@ -12,7 +12,7 @@
 %                  each column is an array with the input combination,
 %                  and the second is a character with which that input
 %                  combination is mapped to.
-%     t          = the time in ps at which the spectrum should be examined.
+%     observe_time          = the time in ps at which the spectrum should be examined.
 %     ic         = array specifying the initial condition
 %     emission     = wavelength at which output spectra should be
 %                  observed when building the plaintext. Note: this
@@ -24,7 +24,7 @@
 %                  is. If not specified, this defaults to a hardcoded
 %                  directory.
 
-function plaintext = decrypt(ciphertext, mappingdb, t, ic, emission, ...
+function plaintext = decrypt(ciphertext, mappingdb, observe_time, ic, emission, ...
                              spec_dir, grid_type, time_res)
   import hough.*;
   format long e;
@@ -49,11 +49,7 @@ function plaintext = decrypt(ciphertext, mappingdb, t, ic, emission, ...
     emisison_eps = 0;
     %time_eps = 5;
   end
-
-  tspanWidth = (2*time_eps+1); % width of the time window
-  plaintext = zeros(1, length(ciphertext)/tspanWidth);
-  compMatrix = zeros(1, length(ciphertext)/tspanWidth); % comparison matrix.
-
+  
   for n=1:size(mappingdb, 1)
     % Load the next data set.
     input = mappingdb{n, 1};
@@ -77,7 +73,7 @@ function plaintext = decrypt(ciphertext, mappingdb, t, ic, emission, ...
 
     if (decrypt_mode == 0)
       timebinsize = 200;
-      tbin = floor(t/timebinsize);
+      tbin = floor(observe_time/timebinsize);
       % Create the span of time bins, centered around tbin.
       tbinspan = tbin-time_eps:tbin+time_eps;
       tbinIndices = zeros(1, length(tbinspan));
@@ -89,18 +85,19 @@ function plaintext = decrypt(ciphertext, mappingdb, t, ic, emission, ...
           tbinIndices(i) = 1;
         end
       end
-      current_slice = current_sig.hough_sig(emission-emission_eps:emission+emission_eps, tbinIndices);
+      current_slice = current_sig.hough_sig(...
+        emission-emission_eps:emission+emission_eps, tbinIndices);
     else
-      lifetime_range = current_sig.time_div./(tand(90-current_sig.theta_range))...
-                       * current_sig.scale_factor * 1e9;
-      current_sig.hough_sig(lifetime_range < 0) = [];
-      lifetime_range(lifetime_range < 0) = [];
-      index = find(abs(lifetime_range - t) == min(abs(lifetime_range - t)));
-      index_range = index-time_eps:index+time_eps;
-      % Ensure that the range is within the bounds of the array.
-      index_range(index_range < 0 + index_range > length(index_range)) = [];
-      csmax = max(current_sig.hough_sig);  % current_sig maximum.
-      current_slice = current_sig.hough_sig(:, index_range)/csmax;
+      if (~exist('plaintext', 'var'))    
+        [taxis start_index end_index] = analysis.util.getIndexFromTimeAxis(...
+          current_sig, [observe_time-time_eps observe_time+time_eps], 'hist');
+        tspanWidth = end_index - start_index + 1;
+        plaintext = zeros(1, length(ciphertext)/tspanWidth);
+        % Comparison matrix for finding the best match.
+        compMatrix = zeros(1, length(ciphertext)/tspanWidth);
+      end
+      csmax = max(current_sig.graph);  % current_sig maximum.
+      current_slice = current_sig.graph(:, start_index:end_index)/csmax;
     end
 
     % Scan through the ciphertext and fill in the blanks with the best matching
@@ -108,11 +105,11 @@ function plaintext = decrypt(ciphertext, mappingdb, t, ic, emission, ...
     for m=1:size(ciphertext, 2)/tspanWidth
       cipher_slice = ciphertext(1, (m-1)*tspanWidth+1:m*tspanWidth);
       % Compare the two data streams.
-      func = crypto.comp_funcs('rel_conv_max');
+      func = crypto.comp_funcs('l2norm');
       comp_val = func(current_slice, cipher_slice);
       if (comp_val > compMatrix(m))
-         compMatrix(m) = comp_val;
-         plaintext(m) = mappingdb{n, 2};
+        compMatrix(m) = comp_val;
+        plaintext(m) = mappingdb{n, 2};
       end
     end
   end

@@ -9,7 +9,7 @@
 % input combination (10,30).
 %
 % SYNTAX:
-%		ciphertext = encrypt(plaintext, mappingdb, t, ic, spec_dir, grid_num)
+%		ciphertext = encrypt(plaintext, mappingdb, observe_time, ic, spec_dir, grid_num)
 %
 %     ciphertext: a 2D matrix containing the encrypted data.
 %     plaintext: a string representing the plaintext data.
@@ -17,7 +17,7 @@
 %				characters. The first cell of each column is an array with the input
 %				combination, and the second is a character with which that input
 %       combination is mapped to.
-%     t: a lifetime value at which the generated Hough transform histograms for
+%     observe_time: a lifetime value at which the generated Hough transform histograms for
 %				each input combination is compared (in ns).
 %     ic: an array containing the initial conditions of this encryption session.
 %     emission: wavelength at which output spectra should be observed when
@@ -29,8 +29,8 @@
 %				hardcoded directory.
 %			grid_num: An identifier for the particular PUF used.
 
-function ciphertext = encrypt(plaintext, mappingdb, t, ic, emission, spec_dir, ...
-															grid_num, time_res)
+function ciphertext = encrypt(plaintext, mappingdb, observe_time, ic, emission, ...
+                              spec_dir,	grid_num, time_eps)
   import hough.*;
 
   % encrypt_mode = 0 indicates we're using RETSim data. encrypt_mode = 1 indicates
@@ -41,7 +41,6 @@ function ciphertext = encrypt(plaintext, mappingdb, t, ic, emission, spec_dir, .
   elseif (nargin == 8)
     encrypt_mode = 1; % Use experimental data rather than RETSim data.
     emission_eps = 0;
-    time_eps = time_res;
   else
     error('Invalid set of parameters.');
   end
@@ -66,9 +65,7 @@ function ciphertext = encrypt(plaintext, mappingdb, t, ic, emission, spec_dir, .
   % input combination mapping.
   sig_map = java.util.HashMap;
   db_map = java.util.HashMap;
-  % Ciphertext matrix. It is as long as the plaintext is - a security issue that
-  % we will need to address.
-  ciphertext = zeros(2*emission_eps+1, length(plaintext)*(2*time_eps+1));
+
 
   %% Build the DB HashMap
   for n = 1:size(mappingdb, 1)
@@ -116,7 +113,7 @@ function ciphertext = encrypt(plaintext, mappingdb, t, ic, emission, spec_dir, .
       % Time bin size is hardcoded for now. This will be added to the signature
       % structures later.
       timebinsize = 1/4096;
-      tbin = floor(t/timebinsize);
+      tbin = floor(observe_time/timebinsize);
       % Identify indices of the time bin, build up a dynamic array of indices.
       tbinspan = tbin-time_eps:tbin+time_eps;
       tbinIndices = zeros(1,length(tbinspan));
@@ -128,19 +125,22 @@ function ciphertext = encrypt(plaintext, mappingdb, t, ic, emission, spec_dir, .
           tbinIndices(i) = 1;
         end
       end
-      current_slice = current_sig.graph(emission-emission_eps:emission+emission_eps, tbinIndices);
       % Extract the slice of sig from current_sig and add to ciphertext.
+      current_slice = current_sig.graph(...
+        emission-emission_eps:emission+emission_eps, tbinIndices);    
     else
-      lifetime_range = current_sig.time_div./(tand(90-current_sig.theta_range))...
-                       * current_sig.scale_factor * 1e9;
-      current_sig.hough_sig(lifetime_range < 0) = [];
-      lifetime_range(lifetime_range < 0) = []; 
-      index = find(abs(lifetime_range - t) == min(abs(lifetime_range - t)));
-      index_range = index-time_eps:index+time_eps;
-      % Ensure that the range is within the bounds of the array.
-      index_range(index_range < 0 + index_range > length(index_range)) = [];
-      csmax = max(current_sig.hough_sig);  % current_sig maximum.
-      current_slice = current_sig.hough_sig(1, index_range)/csmax;
+      % Assume that all histograms for this particular collection of data share
+      % a common time axis, so this only has to be done once.
+      if (~exist('ciphertext', 'var'))
+        [taxis start_index end_index] = analysis.util.getIndexFromTimeAxis(...
+          current_sig, [observe_time-time_eps observe_time+time_eps], 'hist');
+        tspanWidth = end_index - start_index + 1;
+        % Ciphertext matrix. It is as long as the plaintext is - a security issue that
+        % we will need to address.
+        ciphertext = zeros(2*emission_eps+1, length(plaintext)*tspanWidth);
+      end
+      csmax = max(current_sig.graph);  % current_sig maximum.
+      current_slice = current_sig.graph(start_index:end_index)/csmax;
   %   LEGACY CODE.
   %    lower_index = (index-time_eps)*(index - time_eps > 0);
   %		% True if the time at which we're inspecting the sig plus the time
@@ -155,7 +155,6 @@ function ciphertext = encrypt(plaintext, mappingdb, t, ic, emission, spec_dir, .
   %    current_slice = current_sig.hough_sig(1, index_range)/csmax;
     end
 
-    tspanWidth = (2*time_eps)+1;
     ciphertext(:, (n-1)*tspanWidth+1:n*tspanWidth) = current_slice;
   end
 end

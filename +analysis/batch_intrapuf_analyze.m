@@ -51,7 +51,12 @@ function varargout = batch_intrapuf_analyze(datasets, data_type, analysis_type)
         l2norms(i, j) = analysis.twohistanalyze(data_1, data_2, analysis_type);
       end
     end
-    varargout{1} = l2norms;
+    % Print the mapping of IX pair number to actual IX pairs.
+     fprintf('Mapping of IX pair number to the actual IX pairs.\n');
+     for i=1:num_files
+       fprintf('%d: %s\n', i, datasets{1}(i).ex);
+     end
+     varargout{1} = l2norms;
   elseif (strcmp(mode, 'hough_comparison'))
     % Plot EVERYTHING. Temporary code for Dwyer.
     colors= 'rgbcmykwrgbc';

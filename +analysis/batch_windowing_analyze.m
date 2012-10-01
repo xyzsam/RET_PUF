@@ -38,9 +38,8 @@ function varargout = batch_windowing_analyze(dir, mode, start_time, end_time)
     for i=1:num_files
       dataset = datasets{dir}(i);
       [data_type analysis_type] = getDataAndAnalysisType(mode);
-      timeaxis = getTimeAxisFromDataType(dataset, data_type);
-      start_index = getIndexOfClosestMatch(timeaxis, start_time);
-      end_index = getIndexOfClosestMatch(timeaxis, end_time);
+      [timeaxis start_index end_index] = getIndexFromTimeAxis(...
+        dataset, [start_time end_time], data_type);
       data = getDataFromType(dataset, data_type);
       data = data(start_index:end_index);
       dataset = setNewDataByDataType(dataset, data, data_type);

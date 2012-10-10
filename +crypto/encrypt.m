@@ -4,12 +4,12 @@
 %
 % This script performs encryption using the RET-PUF encryption protocol.
 % Spectral data files are named as such:
-%   sa[grid_num]_ic[initial conditions]_i[input combination]
+%   sa[grid_type]_ic[initial conditions]_i[input combination]
 % so: sa100_ic0_1_i_10_30 refers to PUF #100, initial conditions (0,1), and
 % input combination (10,30).
 %
 % SYNTAX:
-%		ciphertext = encrypt(plaintext, mapping_struct, observe_time, ic, spec_dir, grid_num)
+%		ciphertext = encrypt(plaintext, mapping_struct, observe_time, ic, spec_dir, grid_type)
 %
 %     ciphertext: a 2D matrix containing the encrypted data.
 %     plaintext: a string representing the plaintext data.
@@ -33,16 +33,16 @@
 %     spec_dir: an optional parameter indicating where the directory containing
 %				the analyzed spectral data is. If not specified, this defaults to a
 %				hardcoded directory.
-%			grid_num: An identifier for the particular PUF used.
+%			grid_type: An identifier for the particular PUF used.
 %
 % Author: Sam Xi
 
 function ciphertext = encrypt(plaintext, mapping_struct, observe_time, ic_t, ...
-                              emission_t, spec_dir_t,	grid_num_t, time_eps)
+                              emission_t, spec_dir_t,	grid_type_t, time_eps)
   import hough.*;
    % Set global variables so we can use them in other functions in this file.
-  global ic grid_num emission spec_dir encrypt_mode sym_offset
-  ic = ic_t; grid_num = grid_num_t; emission = emission_t;
+  global ic grid_type emission spec_dir encrypt_mode sym_offset
+  ic = ic_t; grid_type = grid_type_t; emission = emission_t;
   spec_dir = spec_dir_t;
   % Symbols in the mapping arrays start from integer value 1. Since we are
   % encoding ASCII symbols, we need to offset those by 65-1 = 64 to start our
@@ -156,7 +156,7 @@ end
 % If it does not currently exist in sig_map, the HashMap holding all the data,
 % then add to sig_map and returned the updated variable.
 function [current_sig sig_map] = getStructForIX(ix_num, sig_map, ix2delays)
-  global ic grid_num emission spec_dir
+  global ic grid_type emission spec_dir
   str_key = mat2str(ix_num);
   % Check if the appropriate data has already been loaded
   if (~isempty(sig_map.get(str_key)))
@@ -172,7 +172,7 @@ function [current_sig sig_map] = getStructForIX(ix_num, sig_map, ix2delays)
     index = find(ix2delays(:, 1) == ix_num);
     input = ix2delays(index, 2:end);
     % Load the file and store it in the HashMap.
-    fileName = util.getDataFileName(ic, input, grid_num, emission);
+    fileName = util.getDataFileName(ic, input, grid_type, emission);
     % load the data, extract the appropriate slice of sig.
     file_loc = strcat(spec_dir, fileName, '.mat');
     if (exist(file_loc, 'file'))

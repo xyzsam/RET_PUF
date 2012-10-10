@@ -31,8 +31,8 @@ function encoded_str = ecc_encode(plaintext, input_bit_size)
   len = length(plaintext);
   encoded_str = zeros(1, len*4);
   % Generator and recovery matrices.
-  G = [0 1 1 1 0 0 0;1 0 1 0 1 0 0; 1 1 0 0 0 1 0; 1 1 1 0 0 0 1];
-  H = [1 0 0 0 1 1 1; 0 1 0 1 0 1 1; 0 0 1 1 1 0 1];
+  G = [0 1 1 1 0 0 0; 1 0 1 0 1 0 0; 1 1 0 0 0 1 0; 1 1 1 0 0 0 1];
+
   for i=1:len
     c = plaintext(i);
     value = c - 65;
@@ -42,17 +42,17 @@ function encoded_str = ecc_encode(plaintext, input_bit_size)
     bits1 = num2bin(char1);
     bits2 = num2bin(char2);
     % Encode the bits with 3 parity bits, and add a zero to pad 7 bits to 8.
-    ecc1 = [mod(bits1*G, 2) 0];
-    ecc2 = [mod(bits2*G, 2) 0];
+    ecc1 = [0 mod(bits1*G, 2)];
+    ecc2 = [0 mod(bits2*G, 2)];
     % Convert the last three bits of ecc1 and ecc2 to a character through
     % some ASCII manipulation.
-    ecc_char1 = bin2dec(char(ecc1(5:end)+48));
-    ecc_char2 = bin2dec(char(ecc2(5:end)+48));
+    ecc_char1 = bin2dec(char(ecc1(2:4)+48));
+    ecc_char2 = bin2dec(char(ecc2(2:4)+48));
     % Store the encoded character.
-    encoded_str(4*i-3) = char1;
-    encoded_str(4*i-2) = ecc_char1;
-    encoded_str(4*i-1) = char2;
-    encoded_str(4*i) = ecc_char2;
+    encoded_str(4*i-3) = ecc_char1;
+    encoded_str(4*i-2) = char1;
+    encoded_str(4*i-1) = ecc_char2;
+    encoded_str(4*i) = char2;
   end
   % Convert the result to a character string.
   encoded_str = char(encoded_str + 65);

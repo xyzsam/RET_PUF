@@ -22,7 +22,7 @@
 function matrix = nperms(v, n)
   if (nargin < 2)
     error('Not enough arguments provided.')
-  elseif (nargin == 2)
+  elseif (nargin == 1)
     n = 2;
   end
 

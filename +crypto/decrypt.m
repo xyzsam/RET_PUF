@@ -3,115 +3,90 @@
 % the ciphertext, a mapping database, an initial condition, and a time delay as
 % the parameters and returns the decoded message as a String.
 %
-%   SYNTAX: plaintext = decrypt(ciphertext, mappingdb, observe_time, ic, spec_dir)
+%   SYNTAX: plaintext = decrypt(ciphertext, mapping_struct, observe_time, ic, ...
+%                               emission, spec_dir, grid_type, time_eps)
 %
-%     plaintext  = decoded message.
-%     ciphertext = encrypted message.
-%     mappingdb  = a 2D cell array which maps laser input
-%                  combinations to ASCII characters. The first cell of
-%                  each column is an array with the input combination,
-%                  and the second is a character with which that input
-%                  combination is mapped to.
-%     observe_time          = the time in ps at which the spectrum should be examined.
-%     ic         = array specifying the initial condition
-%     emission     = wavelength at which output spectra should be
-%                  observed when building the plaintext. Note: this
-%                  should not be observed at very high (~1000) or low
-%                  (0) wavelengths or out of bounds errors are likely
-%                  to occur.
-%     spec_dir   = an optional parameter indicating where the
-%                  directory containing the analyzed spectral data
-%                  is. If not specified, this defaults to a hardcoded
-%                  directory.
+%     plaintext: decoded message.
+%     ciphertext: encrypted message.
+%     mapping_struct: A struct containing mappings from symbols to ix pairs.
+%       'input2ix': an integer array containing a mapping from a block
+%         of input symbols to a set of IX numbers. The first k columns contains
+%         the input symbol blocks, and the remaining columns hold the set of IX
+%         numbers. k is stored in this struct as "symbol_block_length".
+%       'ix2delays': an integer array containing a mapping of IX numbers to
+%         their actual delays. The first column is the IX number, and the rest
+%         of the matrix is the delay values.
+%       'symbol_block_length': The length of each input symbol block.
+%       For more information, see crypto.generate_mappings.m.
+%     observe_time: a lifetime value at which the generated Hough transform histograms for
+%				each input combination is compared (in ns).
+%     ic: an array containing the initial conditions of this encryption session.
+%     emission: wavelength at which output spectra should be observed when
+%				building the ciphertext. Note: this should not be observed at very high
+%				(~1000) or low (0) wavelengths or out of bounds errors are likely to
+%				occur.
+%     spec_dir: A directory location containing the histogram data.
+%			grid_type: An identifier for the particular PUF used.
+%
+% Author: Sam Xi
 
-function plaintext = decrypt(ciphertext, mappingdb, observe_time, ic, emission, ...
-                             spec_dir, grid_type, time_res)
-  import hough.*;
+function plaintext = decrypt(ciphertext, mapping_struct, observe_time, ic_t, ...
+                             emission_t, spec_dir_t, grid_type_t, time_eps)
+  import crypto.*;
   format long e;
+  global ic grid_type emission spec_dir sym_offset
+  ic = ic_t; grid_type = grid_type_t; emission = emission_t;
+  spec_dir = spec_dir_t;
   % decrypt_mode = 0 indicates we're using RETSim data. decrypt_mode = 1 indicates
   % we're using experimental data from TREX.
-  if (nargin < 5)
-    spec_dir = 'D:\Documents\My Dropbox\Dwyer\Experiments\pattern1_spectrum_decryption\';
-    decrypt_mode = 0;
-  elseif (nargin == 8)
-    decrypt_mode = 1; % Use experimental data rather than RETSim data.
-    emission_eps = 0;
-    time_eps = time_res;
-  else
+  if (nargin < 8)
     error('Invalid set of parameters.');
   end
 
-  INT_MAX = 2147483647;
-  if (decrypt_mode == 0)
-    emission_eps = 10;
-    time_eps = 2;
-  else
-    emisison_eps = 0;
-    %time_eps = 5;
-  end
+  sym_len = mapping_struct.symbol_block_length;
+  sym_offset = 64;
+  input2ix_array = mapping_struct.input2ix;
+  sig_map = java.util.HashMap;
   
-  for n=1:size(mappingdb, 1)
-    % Load the next data set.
-    input = mappingdb{n, 1};
-    fileName = util.getDataFileName(ic, input, grid_type, emission);
-    % Load the data and extract the appropriate segment of the hough signature.
-    file_loc = strcat(spec_dir, fileName, '.mat');
-    if (exist(file_loc, 'file'))
-      load(file_loc);
-    else
-      error('Data for file %s not found', fileName);
+  for n=1:size(input2ix_array, 1)
+    % Keep track of progress
+    if (floor(n/100) == n/100)
+      fprintf('Testing input %d of %d...\n', n, size(input2ix_array, 1));
     end
-
-    if (decrypt_mode == 0)
-      % Renames the variable to 'current_sig'.
-      eval(sprintf('current_sig = %s;', fileName));
-      eval(sprintf('clear %s;', fileName)); % deletes the old copy
-    else
-      % The struct loaded is named 'data'.
-      current_sig = data;
-    end
-
-    if (decrypt_mode == 0)
-      timebinsize = 200;
-      tbin = floor(observe_time/timebinsize);
-      % Create the span of time bins, centered around tbin.
-      tbinspan = tbin-time_eps:tbin+time_eps;
-      tbinIndices = zeros(1, length(tbinspan));
-      for i=1:length(tbinspan)
-        index = find(current_sig.keySet == tbinspan(i));
-        if (~isempty(index))
-          tbinIndices(i) = index;
-        else
-          tbinIndices(i) = 1;
-        end
-      end
-      current_slice = current_sig.hough_sig(...
-        emission-emission_eps:emission+emission_eps, tbinIndices);
-    else
-      if (~exist('plaintext', 'var'))    
+    sym_block = input2ix_array(n, 1:sym_len);
+    input = input2ix_array(n, sym_len+1:end);
+    for i=1:length(input)
+      ix_num=input(i);
+      [current_sig sig_map] = get_struct_for_ix(ix_num, sig_map, ...
+                                                mapping_struct.ix2delays);
+      % Initialize this data just once.
+      if (~exist('plaintext', 'var'))
         [taxis start_index end_index] = analysis.util.getIndexFromTimeAxis(...
           current_sig, [observe_time-time_eps observe_time+time_eps], 'hist');
-        tspanWidth = end_index - start_index + 1;
-        plaintext = zeros(1, length(ciphertext)/tspanWidth);
+        symbolWidth = end_index - start_index + 1;
+        blockWidth = sym_len*symbolWidth;
+        num_characters = length(ciphertext)/symbolWidth;
+        current_slice = zeros(1, blockWidth);
+        plaintext = zeros(1, num_characters);
         % Comparison matrix for finding the best match.
-        compMatrix = zeros(1, length(ciphertext)/tspanWidth);
+        compMatrix = zeros(1, num_characters/sym_len);
       end
       csmax = max(current_sig.graph);  % current_sig maximum.
-      current_slice = current_sig.graph(:, start_index:end_index)/csmax;
+      current_subslice = current_sig.graph(:, start_index:end_index)/csmax;
+      current_slice((i-1)*symbolWidth+1:i*symbolWidth) = current_subslice;
     end
-
     % Scan through the ciphertext and fill in the blanks with the best matching
     % input combination.
-    for m=1:size(ciphertext, 2)/tspanWidth
-      cipher_slice = ciphertext(1, (m-1)*tspanWidth+1:m*tspanWidth);
+    for m=1:num_characters/sym_len
+      cipher_slice = ciphertext((m-1)*blockWidth+1:m*blockWidth);
       % Compare the two data streams.
       func = crypto.comp_funcs('l2norm');
       comp_val = func(current_slice, cipher_slice);
       if (comp_val > compMatrix(m))
         compMatrix(m) = comp_val;
-        plaintext(m) = mappingdb{n, 2};
+        plaintext((m-1)*sym_len+1:m*sym_len) = sym_block;
       end
     end
   end
-  plaintext = char(plaintext);
+  plaintext = char(plaintext+sym_offset);
 end

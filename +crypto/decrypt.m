@@ -55,6 +55,7 @@ function plaintext = decrypt(ciphertext, mapping_struct, observe_time, ic_t, ...
     end
     sym_block = input2ix_array(n, 1:sym_len);
     input = input2ix_array(n, sym_len+1:end);
+    ix_len = size(input2ix_array, 2) - sym_len;
     for i=1:length(input)
       ix_num=input(i);
       [current_sig sig_map] = get_struct_for_ix(ix_num, sig_map, ...
@@ -64,9 +65,9 @@ function plaintext = decrypt(ciphertext, mapping_struct, observe_time, ic_t, ...
         [taxis start_index end_index] = analysis.util.getIndexFromTimeAxis(...
           current_sig, [observe_time-time_eps observe_time+time_eps], 'hist');
         symbolWidth = end_index - start_index + 1;
-        blockWidth = sym_len*symbolWidth;
-        num_characters = length(ciphertext)/symbolWidth;
-        current_slice = zeros(1, blockWidth);
+        cipherBlockWidth = ix_len*symbolWidth;
+        num_characters = (length(ciphertext)/cipherBlockWidth)*sym_len;
+        current_slice = zeros(1, cipherBlockWidth);
         plaintext = zeros(1, num_characters);
         % Comparison matrix for finding the best match.
         compMatrix = zeros(1, num_characters/sym_len);
@@ -78,7 +79,7 @@ function plaintext = decrypt(ciphertext, mapping_struct, observe_time, ic_t, ...
     % Scan through the ciphertext and fill in the blanks with the best matching
     % input combination.
     for m=1:num_characters/sym_len
-      cipher_slice = ciphertext((m-1)*blockWidth+1:m*blockWidth);
+      cipher_slice = ciphertext((m-1)*cipherBlockWidth+1:m*cipherBlockWidth);
       % Compare the two data streams.
       func = crypto.comp_funcs('l2norm');
       comp_val = func(current_slice, cipher_slice);

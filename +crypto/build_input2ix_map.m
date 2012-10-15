@@ -25,9 +25,13 @@ function input2ix_map = build_input2ix_map(mapping_struct)
       input2ix_map.put(str_key, ix);
     else
       % Augment the current input mapping list with the new one, because some
-      % input symbol blocks have multiple mappings.
-      new_input = [input2ix_map.get(str_key); ix];
+      % input symbol blocks have multiple mappings. Since ix is initialized with
+      % a row of zeros and we have found a match for this str_key, the entry in
+      % the HashMap already has a row of zeros, so we don't append that first
+      % row in ix.
+      new_input = [input2ix_map.get(str_key); ix(2, :)];
       input2ix_map.put(str_key, new_input);
     end
   end
+
 end

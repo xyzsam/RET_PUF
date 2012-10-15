@@ -31,8 +31,8 @@
 function mappingdb = generate_mappings(n, k, m)
   if (nargin ~= 3)
     error('Invalid number of arguments provided.\n');
-  elseif (n > m)
-    error('n must be less than or equal to m.\n');
+  elseif (m <= 1)
+    error('m must be greater than 1.\n');
   end
 
   % This is the minimum number of IX sequences needed to match n^k input symbol
@@ -58,7 +58,7 @@ function mappingdb = generate_mappings(n, k, m)
     mappingdb(start_row:end_row, 1:k) = symbol_blocks(1:end_source, :);
     if (num_ix - end_row >= num_symbols)
       start_row = end_row + 1;
-      end_row = end_row + num_symbols + 1;
+      end_row = end_row + num_symbols;
     else
       start_row = end_row + 1;
       end_source = num_ix - end_row;

@@ -31,23 +31,36 @@ function out = quickrun(mode)
           'D:\Documents\My Dropbox\Dwyer\Experiments\pattern1_spectrum_decryption\');
       fprintf('Decrypted text: %s\n', plaintext);
   elseif (mode == 4) % trex measurements data
+      % Set measurement parameters.
       data_dir = 'E:\Documents\Dropbox\Dwyer\Measurements\sam-114_1\';
+      load([data_dir 'mappingdb_new.mat']);     
       grid_type = 'sa114';
       output_wavelength = 620; 
       ic = [0];
       time_res = 2e-9;
-      lifetime = 5e-9;
-      orig_plaintext = 'AABDCBDCEC';
-      load([data_dir 'mappingdb-test.mat']);      
-      ciphertext = encrypt(orig_plaintext, mappingdb, lifetime, ic, output_wavelength, ...
-          strcat(data_dir, '1', '\'), grid_type, time_res);
-      fprintf('Encrypted text : %s\n', orig_plaintext);
-      plaintext = decrypt(ciphertext, mappingdb, lifetime, ic, output_wavelength, ...
-          strcat(data_dir, '2', '\'), grid_type, time_res);
-      fprintf('Decrypted text : %s\n', plaintext);
-      diff = sum(orig_plaintext == plaintext);
-      fprintf('Decryption fidelity: %0.0f%%, %d out of %d chars.\n', ...
+      observe_time = 5e-9;
+      % Set plaintext.
+      orig_plaintext = 'ABCDEFGH';
+      fprintf('Plaintext to encrypt: %s\n', orig_plaintext);
+      % Encrypt.
+      ciphertext = encrypt(orig_plaintext, mapping_struct, observe_time, ic, ...
+          output_wavelength, strcat(data_dir, '1', '\'), grid_type, time_res);
+      fprintf('%s encrypted.\n', orig_plaintext);
+      % Decrypt.
+      %decrypt_data_dir = 'E:\Documents\Dropbox\Dwyer\Measurements\sam-116_1\';
+      dec_plaintext = decrypt(ciphertext, mapping_struct, observe_time, ic, ...
+          output_wavelength,strcat(data_dir, '2', '\'), grid_type, time_res);
+      fprintf('Decrypted text : %s\n', dec_plaintext);
+      % Compare the decrypted plaintext with the original plaintext.
+      enc_diff = sum(orig_plaintext == dec_plaintext);
+      diff = sum(orig_plaintext == dec_plaintext(1:length(orig_plaintext)));
+      fprintf('Decryption fidelity of encoded text: %0.0f%%, %d out of %d chars.\n', ...
+          enc_diff/length(orig_plaintext)*100, enc_diff, length(orig_plaintext));
+      fprintf('Decryption fidelity of plaintext: %0.0f%%, %d out of %d chars.\n', ...
           diff/length(orig_plaintext)*100, diff, length(orig_plaintext));
+      out = struct('plaintext', orig_plaintext, ...
+                   'ciphertext', ciphertext, ...
+                   'decrypted_text', dec_plaintext);
   end
   % for i = 1:9
   %     fprintf('Processing log %d...\n', i);

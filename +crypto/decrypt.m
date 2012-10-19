@@ -34,7 +34,7 @@ function plaintext = decrypt(ciphertext, mapping_struct, observe_time, ic_t, ...
                              emission_t, spec_dir_t, grid_type_t, time_eps)
   import crypto.*;
   format long e;
-  global ic grid_type emission spec_dir sym_offset
+  global ic grid_type emission spec_dir
   ic = ic_t; grid_type = grid_type_t; emission = emission_t;
   spec_dir = spec_dir_t;
   % decrypt_mode = 0 indicates we're using RETSim data. decrypt_mode = 1 indicates
@@ -44,7 +44,6 @@ function plaintext = decrypt(ciphertext, mapping_struct, observe_time, ic_t, ...
   end
 
   sym_len = mapping_struct.symbol_block_length;
-  sym_offset = 64;
   input2ix_array = mapping_struct.input2ix;
   sig_map = java.util.HashMap;
   
@@ -89,5 +88,5 @@ function plaintext = decrypt(ciphertext, mapping_struct, observe_time, ic_t, ...
       end
     end
   end
-  plaintext = char(plaintext+sym_offset);
+  plaintext = char(plaintext);
 end

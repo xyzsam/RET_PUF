@@ -9,7 +9,7 @@
 %
 % Author: Sam Xi
 
-function [current_sig sig_map] = getStructForIX(ix_num, sig_map, ix2delays)
+function [current_sig sig_map] = get_struct_for_ix(ix_num, sig_map, ix2delays)
   global ic grid_type emission spec_dir
   str_key = mat2str(ix_num);
   % Check if the appropriate data has already been loaded
@@ -22,9 +22,8 @@ function [current_sig sig_map] = getStructForIX(ix_num, sig_map, ix2delays)
       current_sig.graph = current_sig.graph';
     end
   else
-    % Translate the ix num to the actual delay values.
-    index = find(ix2delays(:, 1) == ix_num);
-    input = ix2delays(index, 2:end);
+    % ix2delays is indexed by ix_num.
+    input = ix2delays(ix_num, 2:end);
     % Load the file and store it in the HashMap.
     fileName = util.getDataFileName(ic, input, grid_type, emission);
     % load the data, extract the appropriate slice of sig.

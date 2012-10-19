@@ -13,6 +13,9 @@
 %     m: Radix of the input-excitation sequence space. If m is greater than n,
 %       then certain input symbol blocks will be mapped to multiple IX
 %       sequences.
+%     pvalues: An array containing integer representations of the input symbols
+%       to permute. If this is not given, pvalues defaults to 65:(65+n-1),
+%       which are the ASCII uppercase characters.
 %     mappingdb: Integer array containing the generated mappings.
 %
 % Example:
@@ -28,18 +31,20 @@
 %
 % Author: Sam Xi
 
-function mappingdb = generate_mappings(n, k, m)
-  if (nargin ~= 3)
+function mappingdb = generate_mappings(n, k, m, pvalues)
+  if (nargin < 3)
     error('Invalid number of arguments provided.\n');
   elseif (m <= 1)
     error('m must be greater than 1.\n');
+  elseif (nargin == 3)
+    pvalues = 65:(65+n-1);
   end
 
   % This is the minimum number of IX sequences needed to match n^k input symbol
   % blocks, where each IX sequence is of radix m.
   p = ceil(k*log(n)/log(m));
   ix_seqs = util.nperms(1:m, p);
-  symbol_blocks = util.nperms(1:n, k);
+  symbol_blocks = util.nperms(pvalues, k);
   num_symbols = size(symbol_blocks, 1);
   num_ix = size(ix_seqs, 1);
   % Randomly permute the rows of the ix_seqs.

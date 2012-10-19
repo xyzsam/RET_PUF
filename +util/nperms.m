@@ -56,11 +56,11 @@ function matrix = nperms(v, n)
 
   % Convert this structure into a cell array and match it with an ASCII character.
   % THIS CODE BELOW IS DEPRECRATED.
-  mappingdb = cell(size(matrix, 1), 2);
-  symbol = 65;  % 65 is A in ASCII
-  for i=1:size(mappingdb, 1)
-    mappingdb{i, 1} = matrix(i, :);
-    mappingdb{i, 2} = char(symbol);
-    symbol = symbol + 1;
-  end
+%   mappingdb = cell(size(matrix, 1), 2);
+%   symbol = 65;  % 65 is A in ASCII
+%   for i=1:size(mappingdb, 1)
+%     mappingdb{i, 1} = matrix(i, :);
+%     mappingdb{i, 2} = char(symbol);
+%     symbol = symbol + 1;
+%   end
 end

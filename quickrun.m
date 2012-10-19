@@ -40,16 +40,17 @@ function out = quickrun(mode)
       time_res = 2e-9;
       observe_time = 5e-9;
       % Set plaintext.
-      orig_plaintext = 'ABCDEFGH';
+      orig_plaintext = 'ABCBEDGFADDGEDGFBBDFEFGDCCAF';
       fprintf('Plaintext to encrypt: %s\n', orig_plaintext);
       % Encrypt.
       ciphertext = encrypt(orig_plaintext, mapping_struct, observe_time, ic, ...
           output_wavelength, strcat(data_dir, '1', '\'), grid_type, time_res);
       fprintf('%s encrypted.\n', orig_plaintext);
       % Decrypt.
-      %decrypt_data_dir = 'E:\Documents\Dropbox\Dwyer\Measurements\sam-116_1\';
+      decrypt_data_dir = 'E:\Documents\Dropbox\Dwyer\Measurements\sam-116_1\';
+      decrypt_grid_type = 'sa116';
       dec_plaintext = decrypt(ciphertext, mapping_struct, observe_time, ic, ...
-          output_wavelength,strcat(data_dir, '2', '\'), grid_type, time_res);
+          output_wavelength,strcat(decrypt_data_dir, '1', '\'), decrypt_grid_type, time_res);
       fprintf('Decrypted text : %s\n', dec_plaintext);
       % Compare the decrypted plaintext with the original plaintext.
       enc_diff = sum(orig_plaintext == dec_plaintext);
@@ -61,6 +62,23 @@ function out = quickrun(mode)
       out = struct('plaintext', orig_plaintext, ...
                    'ciphertext', ciphertext, ...
                    'decrypted_text', dec_plaintext);
+  elseif (mode == 5)  % Ciphertext analysis mode
+    % Set measurement parameters.
+    data_dir = 'E:\Documents\Dropbox\Dwyer\Measurements\sam-114_1\';
+    load([data_dir 'mappingdb_fullalpha.mat']);     
+    grid_type = 'sa114';
+    output_wavelength = 620; 
+    ic = [0];
+    time_res = 2e-9;
+    observe_time = 5e-9;
+    orig_plaintext = util.simplify_text('\', 'midsummer.txt');
+    fprintf('Encrypting plaintext...');
+    % Encrypt.
+    ciphertext = encrypt(orig_plaintext, mapping_struct, observe_time, ic, ...
+        output_wavelength, strcat(data_dir, '1', '\'), grid_type, time_res);
+    fprintf('%s encrypted.\n', orig_plaintext);
+    freqs = analysis.freq_analysis(ciphertext);
+    out = struct('ciphertext', ciphertext, 'freq_analysis', freqs);
   end
   % for i = 1:9
   %     fprintf('Processing log %d...\n', i);

@@ -39,13 +39,9 @@ function ciphertext = encrypt(plaintext, mapping_struct, observe_time, ic_t, ...
                               emission_t, spec_dir_t,	grid_type_t, time_eps)
   import crypto.*;
   % Set global variables so we can use them in other functions in this file.
-  global ic grid_type emission spec_dir encrypt_mode sym_offset
+  global ic grid_type emission spec_dir
   ic = ic_t; grid_type = grid_type_t; emission = emission_t;
   spec_dir = spec_dir_t;
-  % Symbols in the mapping arrays start from integer value 1. Since we are
-  % encoding ASCII symbols, we need to offset those by 65-1 = 64 to start our
-  % alphabet at A.
-  sym_offset = 64;
 
   if (nargin < 8)
     error('Invalid set of parameters.');
@@ -55,19 +51,32 @@ function ciphertext = encrypt(plaintext, mapping_struct, observe_time, ic_t, ...
   % input combination mapping.
   sig_map = java.util.HashMap;
   sym_len = mapping_struct.symbol_block_length;
-  input2ix_map = build_input2ix_map(mapping_struct);
+  input2ix_map = java.util.HashMap;
 
   % Encrypt the plaintext block by block.
   plaintext_length = length(plaintext);
   for n = 1:sym_len:plaintext_length
+    % Print out a number to keep track of where we are.
+    if (n / 100 == floor(n/100))
+      fprintf('Encrypting symbol block at position %d.\n', n);
+    end
     if (n+sym_len <= plaintext_length)
       sym_block = plaintext(n:n+sym_len-1);
     else
       num_zeros = sym_len - (plaintext_length - n + 1);
       % 'Zero pad' the block with a character.
-        sym_block = [plaintext(n:end) ones(1, num_zeros) + sym_offset];
+      sym_block = [plaintext(n:end) ones(1, num_zeros)];
     end
-    input = get_ix_for_symbol_block(sym_block, input2ix_map);
+    % QUICK OUT-OF-MEMORY FIX: CLEAR THE INPUT2IX_MAP EVERY 100 ENTRIES.
+    if (input2ix_map.size >= 100)
+      input2ix_map.clear;
+    end
+    % QUICK OUT-OF-MEMORY FIX: CLEAR THE SIG_MAP IF IT EXCEEDS 50 ENTRIES.
+    if (sig_map.size >= 50)
+      sig_map.clear;
+    end
+    [input input2ix_map] = get_ix_for_symbol_block(sym_block, input2ix_map, ...
+                                                   mapping_struct.input2ix);
     for ix_num=input
       [current_sig sig_map] = get_struct_for_ix(ix_num, sig_map, ...
                                                 mapping_struct.ix2delays);

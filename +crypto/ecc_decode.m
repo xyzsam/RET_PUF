@@ -44,7 +44,10 @@ function decoded_str = ecc_decode(encoded_text, input_bit_size)
       check = H*(v');
       loc = find(ismember(H', check', 'rows') == 1);  % Find column in H that matches v.
       if (~isempty(loc))
-        v(loc) = 1-v(loc);  % Flip the bit.
+        % Only correct the error if one bit is wrong, otherwise, leave it alone.
+        if (length(loc) == 1)
+          v(loc) = 1-v(loc);  % Flip the bit.
+        end
       end
       data = v(4:7);  % Get the data bits.
       if (j == 2)

@@ -92,8 +92,9 @@ function ciphertext = encrypt(plaintext, mapping_struct, observe_time, ic_t, ...
         ciphertext = [];
         %ciphertext = zeros(2*emission_eps+1, length(plaintext)*tspanWidth);
       end
-      csmax = max(current_sig.graph);  % current_sig maximum.
-      current_slice = current_sig.graph(start_index:end_index)/csmax;
+      current_slice = current_sig.graph(start_index:end_index);
+      current_slice = log(current_slice);
+      current_slice = current_slice/trapz(current_slice);
       ciphertext = [ciphertext current_slice];
 %      ciphertext(:, (n-1)*tspanWidth+1:n*tspanWidth) = current_slice;
     end

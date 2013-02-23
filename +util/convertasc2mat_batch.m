@@ -19,7 +19,7 @@ for i=1:size(list,1)
     if (exist(path, 'file'))
        s = loadsdt(path);
        % This is the time range in ns for the saved data. For instance, the
-       % data in array s migh correspond to the time range 0-50ns, so we
+       % data in array s might correspond to the time range 0-50ns, so we
        % would use start_time = 0 and end_time = 50.
        total_time = 50;
        time_div = 1.22e-11;

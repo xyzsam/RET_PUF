@@ -7,12 +7,12 @@
 % sequences. Mappings are randomly created each time.
 %
 % SYNTAX:
-%   mappingdb = generate_mappings(n, k, m)
-%     n: Radix of the input symbols. n must be less than or equal to m.
+%   mappingdb = generate_mappings(n, k, m, pvalues)
+%     n: Radix of the input symbols.
 %     k: Length of each input symbol block.
 %     m: Radix of the input-excitation sequence space. If m is greater than n,
 %       then certain input symbol blocks will be mapped to multiple IX
-%       sequences.
+%       sequences. m must be greater than 1.
 %     pvalues: An array containing integer representations of the input symbols
 %       to permute. If this is not given, pvalues defaults to 65:(65+n-1),
 %       which are the ASCII uppercase characters.

@@ -13,13 +13,15 @@ function freqs = freq_analysis(m)
     error('m must be an single dimension array of floating point values.');
   end
 
-  freqs = zeros(1, 256);
+  freqs = zeros(256, 8);
   for i=1:length(m)
     s = util.ieee754(m(i));
     s8bit = [s(1:8); s(9:16); s(17:24); s(25:32); ...
              s(33:40); s(41: 48); s(49: 56); s(57:64)];
-    intvalues = bin2dec(s8bit);
-    intvalues = uint8(intvalues);  % Convert from double to int.
-    freqs(intvalues+1) = freqs(intvalues+1) + 1;
+    intvalues = bin2dec(s8bit) + 1;
+    for j=1:8
+      freqs(intvalues(j), j) = freqs(intvalues(j), j) + 1;
+    end
   end
+  freqs = freqs';
 end

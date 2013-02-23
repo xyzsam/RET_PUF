@@ -40,15 +40,15 @@ function varargout = batch_intrapuf_analyze(datasets, data_type, analysis_type)
     varargout{1} = corr_integral_result;
     varargout{2} = corr_max_result;
     varargout{3} = corr_ratio_result;
-  elseif (strcmp(analysis_type, 'l2norm'))
-    l2norms = zeros(num_files, num_files);
+  elseif (strcmp(analysis_type, 'ssd') || strcmp(analysis_type, 'pearson'))
+    ssds = zeros(num_files, num_files);
     for i=1:num_files
       for j=1:num_files
         encrypt_struct = datasets{1}(i);
         decrypt_struct = datasets{2}(j);
         data_1 = getDataFromType(encrypt_struct, data_type);
         data_2 = getDataFromType(decrypt_struct, data_type);
-        l2norms(i, j) = analysis.twohistanalyze(data_1, data_2, analysis_type);
+        ssds(i, j) = analysis.twohistanalyze(data_1, data_2, analysis_type);
       end
     end
     % Print the mapping of IX pair number to actual IX pairs.
@@ -56,7 +56,7 @@ function varargout = batch_intrapuf_analyze(datasets, data_type, analysis_type)
      for i=1:num_files
        fprintf('%d: %s\n', i, datasets{1}(i).ex);
      end
-     varargout{1} = l2norms;
+     varargout{1} = ssds;
   elseif (strcmp(mode, 'hough_comparison'))
     % Plot EVERYTHING. Temporary code for Dwyer.
     colors= 'rgbcmykwrgbc';

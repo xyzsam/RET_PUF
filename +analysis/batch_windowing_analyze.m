@@ -22,7 +22,7 @@
 %
 % Author: Sam Xi
 
-function varargout = batch_windowing_analyze(dir, mode, start_time, end_time)
+function varargout = batch_windowing_analyze(dir, mode, start_time, end_time, opt)
   import analysis.*;
   import analysis.util.*;
   datasets = load_structs(dir);
@@ -60,7 +60,7 @@ end
 % will return a different array for data_type = 'hough' than it will for
 % data_type = 'hist'.
 function timeaxis = getTimeAxisFromDataType(dataset, data_type)
-  if (strcmp(data_type, 'hist'))
+  if (strcmp(data_type, 'hist') || strcmp(data_type, 'loghist'))
     timeaxis = 0:dataset.time_div:dataset.time_div*(length(dataset.graph)-1);
   elseif (strcmp(data_type, 'hough') || strcmp(data_type, 'cumhough'))
     timeaxis = dataset.time_div./(tand(90-dataset.theta_range)) * ...
@@ -75,6 +75,8 @@ end
 function dataset = setNewDataByDataType(dataset, data, data_type)
   if (strcmp(data_type, 'hist'))
     dataset.graph = data;
+  elseif (strcmp(data_type, 'loghist'))
+    dataset.graph = log(data);
   elseif (strcmp(data_type, 'hough') || strcmp(data_type, 'cumhough'))
     dataset.hough_sig = data;
   end

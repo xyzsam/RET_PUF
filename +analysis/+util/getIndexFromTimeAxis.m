@@ -23,7 +23,7 @@ function [timeaxis s e] = getIndexFromTimeAxis(dataset, sub_time_range, mode)
   sub_start = sub_time_range(1);
   sub_end = sub_time_range(2);
   
-  if (strcmp(mode, 'hist'))
+  if (strcmp(mode, 'hist') || strcmp(mode, 'loghist'))
     timeaxis = 0:dataset.time_div:dataset.time_div*(length(dataset.graph)-1);
   elseif (strcmp(mode, 'hough') || strcmp(mode, 'cumhough'))
     timeaxis = dataset.time_div./(tand(90-dataset.theta_range)) * ...

@@ -14,13 +14,18 @@
 %     'xcorr_hough' operates on the Hough signatures.
 %     'xcorr_cumhough' operates on the cumulative Hough signature sums.
 %
-% l2norm = batch_intra_puf_analyze(dir, l2norm_mode) computes L2 norms on all
-% IX pairs. l2norm is an nxn matrix where n is the number of IX pairs. All data
-% sets are normalized to a maximum of 1 before any computation is performed.
+% ssd = batch_intra_puf_analyze(dir, mode) computes sum of squares of
+% differences on all IX pairs. ssd is an nxn matrix where n is the number of IX
+% pairs. All data sets are normalized to a maximum of 1 before any computation
+% is performed.
 %   Valid modes:
-%     'l2norm_hist' operates on the raw amplitude histograms.
-%     'l2norm_hough' operates on the Hough signatures.
-%     'l2norm_cumhough' operates on the cumulative Hough signature sums.
+%     'ssd_hist' operates on the raw amplitude histograms.
+%     'ssd_hough' operates on the Hough signatures.
+%     'ssd_cumhough' operates on the cumulative Hough signature sums.
+%
+% Note that in order for this script to work properly, the two directories must
+% contain data files which, when sorted by name, match exactly. Otherwise, the
+% wrong data sets will be compared.
 %
 % For more details, see the documentation for the corresponding mode in
 % analysis.twohistanalyze.

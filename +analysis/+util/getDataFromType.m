@@ -13,6 +13,8 @@
 function data = getDataFromType(data_struct, data_type)
   if (strcmp(data_type, 'hist'))
     data = data_struct.graph;
+  elseif (strcmp(data_type, 'loghist'))
+    data = log(data_struct.graph);
   elseif (strcmp(data_type, 'hough'))
     data = data_struct.hough_sig;
   elseif (strcmp(data_type, 'cumhough'))

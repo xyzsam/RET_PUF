@@ -15,7 +15,7 @@
 % Build the mode string by concatenating the two with an underscore.
 % Valid analysis types:
 %   xcorr: Cross correlation
-%   l2norm: L2 norm.
+%   ssd: Sum of squares of differences.
 %   countsdiff: Difference in total and max counts. NOTE: with this analysis
 %     type, do not include a data type. This is because a comparison of counts
 %     is only meaningful on the raw amplitude histograms, so that data type is
@@ -25,10 +25,11 @@
 %
 % Valid data types:
 %   hist: Raw amplitude histograms from the TCSPC.
+%   loghist: Log (ln) of the raw amplitude histograms.
 %   hough: Hough signature of the raw histograms.
 %   cumhough: Cumulative hough signature.
 %
-% Example of valid mode strings: xcorr_hist, l2norm_cumhough, countsdiff.
+% Example of valid mode strings: xcorr_hist, ssd_cumhough, countsdiff.
 % Example of invalid mode strings: countsdiff_hough, hist_xcorr.
 %
 % For easier use, the results are also formatted and printed to the console.
@@ -61,7 +62,7 @@ function result = batch_twohist_analyze(dir, mode)
               '   corr ratio', ...
               '\n'];
     result_format = '%13.5g%13.5g%13.5f\n';
-  elseif (strcmp(analysis_type, 'l2norm'))
+  elseif (strcmp(analysis_type, 'ssd'))
     result = zeros(num_files, 1);
     header = ['      L2 norm', ...
               '\n'];
@@ -75,6 +76,9 @@ function result = batch_twohist_analyze(dir, mode)
     if (strcmp(data_type, 'hist'))
       data_1 = encrypt_struct.graph;
       data_2 = decrypt_struct.graph;
+    elseif (strcmp(data_type, 'loghist'))
+      data_1 = log(encrypt_struct.graph);
+      data_2 = log(decrypt_struct.graph);
     elseif (strcmp(data_type, 'hough'))
       data_1 = encrypt_struct.hough_sig;
       data_2 = decrypt_struct.hough_sig;

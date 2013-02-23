@@ -26,8 +26,8 @@
 %       maximum of the first data set's autocorrelation, to provide insight on
 %       how similar the two datasets are. The closer to 1 this value is, the
 %       more similar they are.
-%   if mode: 'l2norm', stats is a number representing the L2 norm of the
-%     two datasets.
+%   if mode: 'ssd', stats is a number representing the sum of squares of
+%     differences of the two datasets.
 %
 % Author: Sam Xi
 
@@ -48,8 +48,10 @@ function stats = twohistanalyze(data_1, data_2, mode)
     ndata_1 = data_1/max(data_1);
     ndata_2 = data_2/max(data_2);
     stats = corr_stats(ndata_1, ndata_2);
-  elseif (strcmp(mode, 'l2norm'))
-    stats = l2norm(data_1, data_2);
+  elseif (strcmp(mode, 'ssd'))
+    stats = ssd(data_1, data_2);
+  elseif (strcmp(mode, 'pearson'))
+    stats = pearson(data_1, data_2);
   end
 end
 
@@ -70,10 +72,32 @@ function stats = corr_stats(hist1, hist2)
   stats = [corr_integral corr_max corr_ratio];
 end
 
-function l2n = l2norm(hist1, hist2)
+% Normalized so that the total sum of the curve is 1.
+function l2n = ssd(hist1, hist2)
   longer_length = max(length(hist1), length(hist2));
   combined = zeros(2, longer_length);
-  combined(1, 1:length(hist1)) = hist1/max(hist1);
-  combined(2, 1:length(hist2)) = hist2/max(hist2);
+  combined(1, 1:length(hist1)) = hist1/sum(hist1);
+  combined(2, 1:length(hist2)) = hist2/sum(hist2);
   l2n = sqrt(sum((combined(1,:)-combined(2,:)).^2));
+end
+
+function r = pearson(hist1, hist2)
+  [hist1 hist2] = normalize(hist1, hist2);
+  mean1 = mean(hist1);
+  mean2 = mean(hist2);
+  diff1 = hist1 - mean1;
+  diff2 = hist2 - mean2;
+  r = corr([hist1' hist2']);
+  r = r(1,2);
+  %r = sum(diff1.*diff2)./(sqrt(sum(diff1.^2).*sum(diff2.^2)));
+end
+
+function [hist1 hist2] = normalize(hist1, hist2)
+  length1 = length(hist1);
+  length2 = length(hist2);
+  if (length1 > length2)
+    hist2 = [hist2 zeros(1, length1-length2)];
+  else
+    hist1 = [hist1 zeros(1, length2-length1)];
+  end
 end

@@ -41,7 +41,6 @@ function handle = bar3_relcolor(data)
   numcolors = size(data, 2);
   colormap(getColorMap(numcolors, 1));
   caxis([barmin barmax]);
-  colorbar;
   shading interp;
   handle = bh;
   view(2);
